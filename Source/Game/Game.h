@@ -1,6 +1,9 @@
 #pragma once
 #include <fstream>
 #include "GameWorld.h"
+#include "Custom/Input.h"
+
+using namespace CommonUtilities;
 
 class Game
 {

@@ -156,6 +156,9 @@
   <ItemGroup>
     <ClInclude Include="..\Source\Game\Game.h" />
     <ClInclude Include="..\Source\Game\GameWorld.h" />
+    <ClInclude Include="..\Source\Game\Grid\Grid.h" />
+    <ClInclude Include="..\Source\Game\Physics\Ray.h" />
+    <ClInclude Include="..\Source\Game\Physics\Raycast.h" />
     <ClInclude Include="..\Source\Game\resource.h" />
     <ClInclude Include="..\Source\Game\stdafx.h" />
     <ClInclude Include="..\Source\Game\targetver.h" />
@@ -163,6 +166,7 @@
   <ItemGroup>
     <ClCompile Include="..\Source\Game\Game.cpp" />
     <ClCompile Include="..\Source\Game\GameWorld.cpp" />
+    <ClCompile Include="..\Source\Game\Grid\Grid.cpp" />
     <ClCompile Include="..\Source\Game\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

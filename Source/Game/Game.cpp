@@ -4,7 +4,9 @@
 
 #include <tga2d/error/ErrorManager.h>
 
+
 using namespace std::placeholders;
+
 
 #ifdef _DEBUG
 #pragma comment(lib,"tga2dcore_Debug.lib")
@@ -28,6 +30,8 @@ Game::~Game()
 
 LRESULT Game::WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	Mouse::UpdateEvents(hWnd, message, wParam, lParam);
+	Keyboard::Update(message, wParam, lParam);
 	lParam;
 	wParam;
 	hWnd;
@@ -82,4 +86,5 @@ void Game::UpdateCallBack()
 {
 	myGameWorld.Update(Tga2D::Engine::GetInstance()->GetDeltaTime());
 	myGameWorld.Render();
+	Mouse::EndFrame();
 }

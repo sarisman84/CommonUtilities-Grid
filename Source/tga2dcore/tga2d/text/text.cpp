@@ -49,7 +49,7 @@ float Tga2D::Text::GetWidth()
 		return 0.0f;
 	}
 
-	return myTextService->GetSentenceWidth(*this) / Engine::GetInstance()->GetWindowSize().x;
+	return myTextService->GetSentenceWidth(*this) / Engine::GetInstance()->GetTargetSize().x;
 }
 
 float Tga2D::Text::GetHeight()

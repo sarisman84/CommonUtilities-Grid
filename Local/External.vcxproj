@@ -151,6 +151,19 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\External\Custom\DoublyLinkedList.h" />
+    <ClInclude Include="..\Source\External\Custom\Heap.hpp" />
+    <ClInclude Include="..\Source\External\Custom\Input.h" />
+    <ClInclude Include="..\Source\External\Custom\List.h" />
+    <ClInclude Include="..\Source\External\Custom\ObjectFactory.h" />
+    <ClInclude Include="..\Source\External\Custom\Queue.hpp" />
+    <ClInclude Include="..\Source\External\Custom\Stack.hpp" />
+    <ClInclude Include="..\Source\External\Custom\UtilityFunctions.h" />
+    <ClInclude Include="..\Source\External\Custom\Vector.h" />
+    <ClInclude Include="..\Source\External\Custom\Vector2.h" />
+    <ClInclude Include="..\Source\External\Custom\Vector3.h" />
+    <ClInclude Include="..\Source\External\Custom\Vector4.h" />
+    <ClInclude Include="..\Source\External\Custom\VectorOnStack.h" />
     <ClInclude Include="..\Source\External\DirectXTex\DDSTextureLoader\DDSTextureLoader11.h" />
     <ClInclude Include="..\Source\External\DirectXTex\ScreenGrab\ScreenGrab11.h" />
     <ClInclude Include="..\Source\External\DirectXTex\WICTextureLoader\WICTextureLoader11.h" />
@@ -349,6 +362,8 @@
     <ClInclude Include="..\Source\External\imgui\misc\single_file\imgui_single_file.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\External\Custom\Input.cpp" />
+    <ClCompile Include="..\Source\External\Custom\ObjectFactory.cpp" />
     <ClCompile Include="..\Source\External\DirectXTex\DDSTextureLoader\DDSTextureLoader11.cpp" />
     <ClCompile Include="..\Source\External\DirectXTex\ScreenGrab\ScreenGrab11.cpp" />
     <ClCompile Include="..\Source\External\DirectXTex\WICTextureLoader\WICTextureLoader11.cpp" />

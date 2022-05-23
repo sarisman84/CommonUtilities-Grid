@@ -67,6 +67,9 @@
     <Filter Include="imgui\misc\single_file">
       <UniqueIdentifier>{4B942DFF-378E-5651-20FB-EC610C94BCBD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Custom">
+      <UniqueIdentifier>{f939081b-bece-4ed4-88c8-fc31338f3e2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\External\DirectXTex\DDSTextureLoader\DDSTextureLoader11.h">
@@ -655,6 +658,45 @@
     <ClInclude Include="..\Source\External\imgui\misc\single_file\imgui_single_file.h">
       <Filter>imgui\misc\single_file</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\VectorOnStack.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\Heap.hpp">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\Input.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\List.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\ObjectFactory.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\Queue.hpp">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\Stack.hpp">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\UtilityFunctions.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\Vector.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\Vector2.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\Vector3.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\Vector4.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\External\Custom\DoublyLinkedList.h">
+      <Filter>Custom</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\External\DirectXTex\DDSTextureLoader\DDSTextureLoader11.cpp">
@@ -695,6 +737,12 @@
     </ClCompile>
     <ClCompile Include="..\Source\External\imgui\misc\freetype\imgui_freetype.cpp">
       <Filter>imgui\misc\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\External\Custom\Input.cpp">
+      <Filter>Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\External\Custom\ObjectFactory.cpp">
+      <Filter>Custom</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
