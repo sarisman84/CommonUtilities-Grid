@@ -18,6 +18,7 @@
 #include <Custom/Input.h>
 #include <imgui/imgui.h>
 
+
 GameWorld::GameWorld()
 {
 }
@@ -47,11 +48,8 @@ void GameWorld::Init()
 	myGrid.myCellSize.x /= resolution.x;
 	myGrid.myCellSize.y /= resolution.y;
 
-	myGrid.myCells.resize(myGrid.myGridSize.y);
-	for (size_t i = 0; i < myGrid.myCells.size(); i++)
-	{
-		myGrid.myCells[i].resize(myGrid.myGridSize.x);
-	}
+	myGrid.Initialize();
+
 	myTextElements.resize(myGrid.myGridSize.x * myGrid.myGridSize.y);
 	for (int i = 0; i < myGrid.myGridSize.x * myGrid.myGridSize.y; i++)
 	{
@@ -59,7 +57,7 @@ void GameWorld::Init()
 		float y = static_cast<float>(i / myGrid.myGridSize.y) * myGrid.myCellSize.y;
 		myTextElements[i] = new Tga2D::Text();
 		myTextElements[i]->SetText(std::to_string(i));
-		auto foundPos = Tga2D::Vector2f{ 0.025f + x - myTextElements[i]->GetWidth() / 2.f, 0.03f + y };
+		auto foundPos = Tga2D::Vector2f{ 0.025f + x - myTextElements[i]->GetWidth() / 2.f, y + 0.02f };
 		myTextElements[i]->SetPosition(foundPos);
 
 		myTextElements[i]->SetColor({ 1,1,1,1 });
@@ -75,32 +73,71 @@ void GameWorld::Init()
 
 void GameWorld::Update(float aTimeDelta)
 {
-	bool usedEditor = false;
-	ImGui::Begin("Editor");
+	static bool showIndexes = false;
+	static bool gridMapState = false;
+	static bool clearState = false;
+	static bool showSearchArea = false;
 
-	if (ImGui::Button("Show Index"))
+	ImGui::BeginMainMenuBar();
+	ImGui::MenuItem("Show Index", NULL, &showIndexes);
+	ImGui::MenuItem("Grid Map", NULL, &gridMapState);
+	ImGui::MenuItem("Clear Objects", NULL, &clearState);
+	ImGui::MenuItem("Show Search Area", NULL, &showSearchArea);
+	ImGui::EndMainMenuBar();
+
+
+	if (showIndexes)
 	{
 		myShowIndexFlag = !myShowIndexFlag;
-		usedEditor = true;
+		showIndexes = false;
 	}
 
-
-	for (float y = 0; y < myGrid.myCells.size(); y++)
+	if (gridMapState)
 	{
 
-		for (float x = 0; x < myGrid.myCells[static_cast<int>(y)].size(); x++)
-		{
-			float i = (x + myGrid.myGridSize.x * y);
-			ImGui::SameLine();
-			ImGui::InputFloat("", &i);
-		}
-		ImGui::NewLine();
+		myShowCountFlag = !myShowCountFlag;
+		gridMapState = false;
+	}
+
+	if (showSearchArea)
+	{
+		myShowSearchAreaFlag = !myShowSearchAreaFlag;
+		showSearchArea = false;
+	}
+
+	if (clearState)
+	{
+		myGrid.Clear();
+		clearState = false;
 	}
 
 
-	ImGui::End();
+	for (int i = 0; i < myTextElements.size(); i++)
+	{
+		int x = i % myGrid.myGridSize.x;
+		int y = i / myGrid.myGridSize.y;
 
-	if (usedEditor) return;
+		std::string output;
+
+		if (myShowIndexFlag)
+		{
+			output += std::to_string(x) + "," + std::to_string(y) + "\n";
+			myTextElements[i]->SetScale(0.75f);
+		}
+
+
+		if (myShowCountFlag)
+		{
+			output += std::to_string(myGrid.myCells[y][x].myContents.size());
+
+
+			myTextElements[i]->SetScale(0.5f);
+		}
+
+		myTextElements[i]->SetText(output);
+
+	}
+
 
 	RECT rect;
 	GetClientRect(*Tga2D::Engine::GetInstance()->GetHWND(), &rect);
@@ -176,21 +213,65 @@ void GameWorld::Render()
 	drawer.DrawCircle(myMousePosition, 0.01f);
 	drawer.DrawCircle(myMousePosition, myViewDistance);
 
+
 	for (size_t y = 0; y < myGrid.myCells.size(); y++)
 	{
 		for (size_t x = 0; x < myGrid.myCells[y].size(); x++)
 		{
+			myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 1,1,1,1 });
+
+
+
 			if (!myGrid.myCells[y][x].IsEmpty())
 			{
 				for (size_t i = 0; i < myGrid.myCells[y][x].myContents.size(); i++)
 				{
-					drawer.DrawCircle(myGrid.myCells[y][x].myContents[i]->myPosition, myGrid.myCells[y][x].myContents[i]->mySize.Length());
+					drawer.DrawCircle(myGrid.myCells[y][x].myContents[i]->myPosition, myGrid.myCells[y][x].myContents[i]->mySize.myX);
 				}
 			}
 		}
 	}
 
-	if (!myShowIndexFlag)
+
+
+	Tga2D::Vector2f minPos = { myMousePosition.x - myViewDistance, myMousePosition.y - myViewDistance };
+	Tga2D::Vector2f maxPos = { myMousePosition.x + myViewDistance, myMousePosition.y + myViewDistance };
+	if (minPos.y >= 0 && maxPos.y < myGrid.myGridSize.y && minPos.x >= 0 && maxPos.x < myGrid.myGridSize.x)
+	{
+		Tga2D::Vector2i* r = myGrid.BoundBoxToIndex(minPos, maxPos);
+
+		for (int y = r[0].myY; y < r[1].myY; y++)
+		{
+			for (int x = r[0].myX; x < r[1].myX; x++)
+			{
+				
+				if (myShowSearchAreaFlag)
+					myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 0,1,0,1 });
+
+
+
+
+				if (myGrid.myCells[y][x].IsEmpty()) continue;
+				auto result = myGrid.Raycast(myMousePosition, myGrid.myCells[y][x].myWorldPosition);
+				if (result && !result->IsEmpty())
+				{
+					for (size_t i = 0; i < result->myContents.size(); i++)
+					{
+						drawer.DrawLine(myMousePosition, result->myContents[i]->myPosition);
+					}
+				}
+			}
+		}
+	}
+
+
+	
+
+
+
+
+
+	if (myShowIndexFlag || myShowCountFlag)
 		for (size_t i = 0; i < myTextElements.size(); i++)
 		{
 			myTextElements[i]->Render();

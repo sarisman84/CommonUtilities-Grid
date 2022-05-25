@@ -31,6 +31,8 @@ private:
 
 	std::vector<Tga2D::Text*> myTextElements;
 	Tga2D::Vector2f myMousePosition;
-	bool myShowIndexFlag = true;
+	bool myShowIndexFlag = false;
+	bool myShowCountFlag = false;
+	bool myShowSearchAreaFlag = false;
 	//Tga2D::AnimatedModelInstance model;
 };
