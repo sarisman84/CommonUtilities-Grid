@@ -1,6 +1,7 @@
 #pragma once
 #include <tga2d/math/Transform.h>
 #include <vector>
+#include <memory>
 
 struct GridObject
 {
@@ -10,7 +11,7 @@ struct GridObject
 
 struct Cell
 {
-	std::vector<GridObject*> myContents;
+	std::vector<std::shared_ptr<GridObject>> myContents;
 	Tga2D::Vector2f myPosition;
 	Tga2D::Vector2f myWorldPosition;
 	Tga2D::Vector2f myCellSize;
@@ -19,7 +20,7 @@ struct Cell
 		return myContents.size() == 0;
 	}
 
-	inline bool Contains(GridObject* anObject)
+	inline bool Contains(std::shared_ptr<GridObject> anObject)
 	{
 		return std::find(myContents.begin(), myContents.end(), anObject) != myContents.end();
 	}
@@ -46,17 +47,20 @@ public:
 	Tga2D::Vector2f myCellSize;
 	Tga2D::Vector2i myGridSize;
 
+
+	Tga2D::Vector2i GetCellPosAtPos(Tga2D::Vector2f aPosition);
 	Cell* GetCellAtPos(Tga2D::Vector2f aPosition);
+	Cell* GetCellAtPos(Tga2D::Vector2i aPosition);
 
 	void InsertObject(GridObject* anObject);
 
 
-	Cell* Raycast(Tga2D::Vector2f aStartPos, Tga2D::Vector2f anEndPos);
-	Tga2D::Vector2i* BoundBoxToIndex(Tga2D::Vector2f aMinPos, Tga2D::Vector2f aMaxPos);
+	std::vector<Cell*> Raycast(Tga2D::Vector2f aStartPos, Tga2D::Vector2f anEndPos);
+	std::array<Tga2D::Vector2i,2> BoundBoxToIndex(Tga2D::Vector2f aMinPos, Tga2D::Vector2f aMaxPos);
 private:
 	const bool IsPosOutOfBounds(const Tga2D::Vector2f aPosition);
 
-	void InsertObjectInGrid(GridObject* anObject, Cell* aCell);
+	void InsertObjectInGrid(std::shared_ptr<GridObject> anObject, Cell* aCell);
 	const bool AABBCheck(Tga2D::Vector2f aPos1, Tga2D::Vector2f aSize1, Tga2D::Vector2f aPos2, Tga2D::Vector2f aSize2);
 
 };

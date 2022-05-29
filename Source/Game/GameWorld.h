@@ -12,6 +12,18 @@ namespace Tga2D
 	class Text;
 }
 
+struct DrawInfo
+{
+	std::shared_ptr<GridObject> myObj;
+	Tga2D::Color myColor;
+
+	inline const bool operator==(DrawInfo aLhs)
+	{
+		return myObj == aLhs.myObj;
+	}
+};
+
+
 class GameWorld
 {
 
@@ -25,6 +37,10 @@ public:
 	void Render();
 
 private:
+	void DrawGrid();
+	void DrawObjects();
+
+
 	Grid myGrid;
 	Tga2D::Color myLineColor = { 1,1,1,1 };
 	float myViewDistance;
@@ -34,5 +50,7 @@ private:
 	bool myShowIndexFlag = false;
 	bool myShowCountFlag = false;
 	bool myShowSearchAreaFlag = false;
+
+	std::vector<DrawInfo> myObjectsToDraw;
 	//Tga2D::AnimatedModelInstance model;
 };

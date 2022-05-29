@@ -103,6 +103,7 @@ void GameWorld::Update(float aTimeDelta)
 	{
 		myShowSearchAreaFlag = !myShowSearchAreaFlag;
 		showSearchArea = false;
+		std::cout << "Show Search Area Bounding Box: " << (myShowSearchAreaFlag ? "ON" : "OFF") << std::endl;
 	}
 
 	if (clearState)
@@ -170,13 +171,11 @@ void GameWorld::Update(float aTimeDelta)
 
 }
 
-void GameWorld::Render()
+
+void GameWorld::DrawGrid()
 {
 	int size = 1000;
 	float offset = 0.001f;
-
-
-
 	Tga2D::DebugDrawer& drawer = Tga2D::Engine::GetInstance()->GetDebugDrawer();
 	std::vector<Tga2D::Vector2f> myStartPoint;
 	std::vector<Tga2D::Vector2f> myEndPoint;
@@ -208,72 +207,95 @@ void GameWorld::Render()
 
 
 	drawer.DrawLines(&myStartPoint[0], &myEndPoint[0], &myColor[0], static_cast<unsigned int>(myStartPoint.size()));
+}
 
+
+
+void GameWorld::DrawObjects()
+{
+	Tga2D::DebugDrawer& drawer = Tga2D::Engine::GetInstance()->GetDebugDrawer();
 
 	drawer.DrawCircle(myMousePosition, 0.01f);
 	drawer.DrawCircle(myMousePosition, myViewDistance);
 
 
-	for (size_t y = 0; y < myGrid.myCells.size(); y++)
+	for (auto& obj : myObjectsToDraw)
 	{
-		for (size_t x = 0; x < myGrid.myCells[y].size(); x++)
-		{
-			myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 1,1,1,1 });
-
-
-
-			if (!myGrid.myCells[y][x].IsEmpty())
-			{
-				for (size_t i = 0; i < myGrid.myCells[y][x].myContents.size(); i++)
-				{
-					drawer.DrawCircle(myGrid.myCells[y][x].myContents[i]->myPosition, myGrid.myCells[y][x].myContents[i]->mySize.myX);
-				}
-			}
-		}
+		drawer.DrawCircle(obj.myObj->myPosition, obj.myObj->mySize.x, obj.myColor);
 	}
 
+	myObjectsToDraw.clear();
+
+}
+
+void GameWorld::Render()
+{
+
+
+
+
+	Tga2D::DebugDrawer& drawer = Tga2D::Engine::GetInstance()->GetDebugDrawer();
 
 
 	Tga2D::Vector2f minPos = { myMousePosition.x - myViewDistance, myMousePosition.y - myViewDistance };
 	Tga2D::Vector2f maxPos = { myMousePosition.x + myViewDistance, myMousePosition.y + myViewDistance };
-	if (minPos.y >= 0 && maxPos.y < myGrid.myGridSize.y && minPos.x >= 0 && maxPos.x < myGrid.myGridSize.x)
+
+	std::array<Tga2D::Vector2i, 2> r = myGrid.BoundBoxToIndex(minPos, maxPos);
+
+	//std::cout << "Min: " << r[0] << "/ Max: " << r[1] << std::endl;
+	for (size_t y = 0; y < myGrid.myCells.size(); y++)
 	{
-		Tga2D::Vector2i* r = myGrid.BoundBoxToIndex(minPos, maxPos);
-
-		for (int y = r[0].myY; y < r[1].myY; y++)
+		for (size_t x = 0; x < myGrid.myCells[y].size(); x++)
 		{
-			for (int x = r[0].myX; x < r[1].myX; x++)
+			bool isInViewRadius = !(r[0].x > x || r[1].x < x || r[0].y > y || r[1].y < y) && (myGrid.myCells[y][x].myWorldPosition - myMousePosition).Length() <= myViewDistance;
+			
+
+			if (isInViewRadius && myShowSearchAreaFlag)
 			{
-				
-				if (myShowSearchAreaFlag)
-					myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 0,1,0,1 });
+				myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 0,1,0,1 });
+			}
+			else
+				myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 1,1,1,1 });
 
+			if (myGrid.myCells[y][x].IsEmpty()) continue;
 
-
-
-				if (myGrid.myCells[y][x].IsEmpty()) continue;
+			if (isInViewRadius)
+			{
 				auto result = myGrid.Raycast(myMousePosition, myGrid.myCells[y][x].myWorldPosition);
-				if (result && !result->IsEmpty())
+				for (auto& cell : result)
 				{
-					for (size_t i = 0; i < result->myContents.size(); i++)
+					if (!cell->IsEmpty())
 					{
-						drawer.DrawLine(myMousePosition, result->myContents[i]->myPosition);
+						for (size_t i = 0; i < cell->myContents.size(); i++)
+						{
+							drawer.DrawLine(myMousePosition, cell->myContents[i]->myPosition);
+							if (std::find(myObjectsToDraw.begin(), myObjectsToDraw.end(), DrawInfo{ cell->myContents[i], Tga2D::Color(1,1,1,1) }) == myObjectsToDraw.end())
+								myObjectsToDraw.push_back({ cell->myContents[i], Tga2D::Color(1,1,1,1) });
+						}
+						break;
+
 					}
 				}
 			}
+
+
+			for (size_t i = 0; i < myGrid.myCells[y][x].myContents.size(); i++)
+			{
+				if (std::find(myObjectsToDraw.begin(), myObjectsToDraw.end(), DrawInfo{ myGrid.myCells[y][x].myContents[i], Tga2D::Color(0.5f,0.5f,0.5f,1) }) == myObjectsToDraw.end())
+					myObjectsToDraw.push_back({ myGrid.myCells[y][x].myContents[i], Tga2D::Color(1.f,0.0f,0.0f,1) });
+			}
+
 		}
 	}
 
 
-	
-
-
-
-
+	DrawGrid();
+	DrawObjects();
 
 	if (myShowIndexFlag || myShowCountFlag)
 		for (size_t i = 0; i < myTextElements.size(); i++)
 		{
 			myTextElements[i]->Render();
 		}
+
 }

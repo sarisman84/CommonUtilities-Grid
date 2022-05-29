@@ -1,19 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\Source\Game\Game.cpp" />
-    <ClCompile Include="..\Source\Game\GameWorld.cpp" />
-    <ClCompile Include="..\Source\Game\stdafx.cpp" />
-    <ClCompile Include="..\Source\Game\Grid\Grid.cpp">
-      <Filter>Grid</Filter>
-    </ClCompile>
+    <Filter Include="Grid">
+      <UniqueIdentifier>{4BF1857C-3728-870D-E014-6D10CC2A030F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{888B590D-F46A-D8A8-FD82-637F69E13E0A}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Game\Game.h" />
     <ClInclude Include="..\Source\Game\GameWorld.h" />
-    <ClInclude Include="..\Source\Game\resource.h" />
-    <ClInclude Include="..\Source\Game\stdafx.h" />
-    <ClInclude Include="..\Source\Game\targetver.h" />
     <ClInclude Include="..\Source\Game\Grid\Grid.h">
       <Filter>Grid</Filter>
     </ClInclude>
@@ -23,13 +20,16 @@
     <ClInclude Include="..\Source\Game\Physics\Raycast.h">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Game\resource.h" />
+    <ClInclude Include="..\Source\Game\stdafx.h" />
+    <ClInclude Include="..\Source\Game\targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Grid">
-      <UniqueIdentifier>{95dc4917-af9c-407b-a319-09a4292ba185}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Physics">
-      <UniqueIdentifier>{c4497338-25e0-42b5-90b3-10b3e6bd38f2}</UniqueIdentifier>
-    </Filter>
+    <ClCompile Include="..\Source\Game\Game.cpp" />
+    <ClCompile Include="..\Source\Game\GameWorld.cpp" />
+    <ClCompile Include="..\Source\Game\Grid\Grid.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Game\stdafx.cpp" />
   </ItemGroup>
 </Project>
