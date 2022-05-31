@@ -194,7 +194,7 @@ void Tga2D::Engine::IdleProcess()
 			myUpdateFunctionToCall();
 		}
 
-		myImguiInterFace->Render();
+		// myImguiInterFace->Render(); // Moved to EndFrame()
 		EndFrame();
 
 		if (myWantToUpdateSize)
@@ -489,6 +489,8 @@ void Engine::EndFrame( void )
 		myDebugDrawer->Update(myDeltaTime);
 		myDebugDrawer->Render();
 	}
+
+	myImguiInterFace->Render(); // Moved here from IdleProcess()
 
 	myDx11->EndFrame(myCreateParameters.myEnableVSync);
 
