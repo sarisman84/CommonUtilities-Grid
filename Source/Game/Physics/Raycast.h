@@ -1,39 +1,45 @@
 #pragma once
 #include "Ray.h"
 #include "../Grid/Grid.h"
+#include <vector>
 
 namespace Physics
 {
-	bool Raycast2D(Ray2D<float> aRay, Grid* aGrid, Cell* aFoundCell)
+	bool IntersectionGridObjectRay(Ray2D<float> aRay, std::vector<std::shared_ptr<GridObject>> someObjects, std::shared_ptr<GridObject>* anOutput)
 	{
-		if (!aGrid) return false;
-
-		if (!aGrid->GetCellAtPos(aRay.GetOrigin())->IsEmpty())
-			return true;
-
-		int x = floor(aRay.GetOrigin().x), y = floor(aRay.GetOrigin().y);
-
-		x += floor(aRay.GetDirection().GetNormalized().x);
-		y += floor(aRay.GetDirection().GetNormalized().y);
-
-		bool hasFoundSomething;
-		auto cell = aGrid->GetCellAtPos({ x,y });
-		while (cell->IsEmpty() && x >= 0 && x < aGrid->myGridSize.x && y >= 0 && y < aGrid->myGridSize.y)
+		for (auto& obj : someObjects)
 		{
-			if (!cell->IsEmpty())
+			float halfExtendsX = obj->mySize.x / 2.f;
+			float halfExtendsY = obj->mySize.y / 2.f;
+
+
+			Tga2D::Vector2f min = { halfExtendsX - obj->myPosition.x , halfExtendsY - obj->myPosition.y };
+			Tga2D::Vector2f max = { halfExtendsX + obj->myPosition.x , halfExtendsY + obj->myPosition.y };
+
+
+	
+
+
+
+			float tMinX = (min.x - aRay.GetOrigin().x) / aRay.GetDirection().x;
+			float tMaxX = (max.x - aRay.GetOrigin().x) / aRay.GetDirection().x;
+
+			float tMinY = (min.y - aRay.GetOrigin().y) / aRay.GetDirection().y;
+			float tMaxY = (max.y - aRay.GetOrigin().y) / aRay.GetDirection().y;
+
+
+			float tMin = std::max(std::min(tMinX, tMaxX), std::min(tMinY, tMaxY));
+			float tMax = std::min(std::max(tMinX, tMaxX), std::max(tMinY, tMaxY));
+
+
+			if (tMax < 0.0f || tMin > tMax) continue;
+			if (tMin < 0.0f)
 			{
-				hasFoundSomething = true;
-				aFoundCell = cell;
-				break;
+				anOutput = &obj;
+				return true;
 			}
-
-			x += floor(aRay.GetDirection().GetNormalized().x);
-			y += floor(aRay.GetDirection().GetNormalized().y);
-
-			cell = aGrid->GetCellAtPos({ x,y });
 		}
+		return false;
 
-
-		return hasFoundSomething;
 	}
 }

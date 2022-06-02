@@ -83,7 +83,7 @@ void Grid::InsertObject(GridObject* anObject)
 	InsertObjectInGrid(obj, cell);
 }
 
-std::vector<Cell*> Grid::Raycast(Tga2D::Vector2f aStartPos, Tga2D::Vector2f anEndPos)
+std::vector<Cell*> Grid::TraceGridPath(Tga2D::Vector2f aStartPos, Tga2D::Vector2f anEndPos)
 {
 	std::vector<Cell*> r;
 	//Taken from this article: http://playtechs.blogspot.com/2007/03/raytracing-on-grid.html

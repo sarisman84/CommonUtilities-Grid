@@ -18,6 +18,9 @@
 #include <Custom/Input.h>
 #include <imgui/imgui.h>
 
+#include "Physics/Raycast.h"
+
+
 
 GameWorld::GameWorld()
 {
@@ -73,6 +76,163 @@ void GameWorld::Init()
 
 void GameWorld::Update(float aTimeDelta)
 {
+	TextElementUpdate();
+	EditorUpdate();
+
+
+
+
+
+	RECT rect;
+	GetClientRect(*Tga2D::Engine::GetInstance()->GetHWND(), &rect);
+
+	auto a = Tga2D::Engine::GetInstance()->GetTargetSize();
+	Tga2D::Vector2f targetRez = { static_cast<float>(a.x),static_cast<float>(a.y) };
+	Tga2D::Vector2f resolution = { static_cast<float>(rect.right),static_cast<float>(rect.bottom) };
+
+	aTimeDelta;
+
+	using namespace CommonUtilities;
+
+	auto pos = Mouse::GetMousePosition();
+
+	myMousePosition = { pos.x / targetRez.x, pos.y / targetRez.y };
+
+
+	if (Mouse::GetButtonDown(Mouse::Key::LeftMouseButton))
+	{
+		auto obj = new GridObject();
+		obj->myPosition = myMousePosition;
+		obj->mySize = { 20.f / targetRez.x, 20.f / targetRez.y };
+		myGrid.InsertObject(obj);
+	}
+
+
+
+
+	CollisionUpdate();
+
+
+
+}
+
+
+
+const bool GameWorld::IsInViewRadius(std::array<Tga2D::Vector2i, 2> someBounds, size_t someX, size_t someY)
+{
+	return !(someBounds[0].x > someX || someBounds[1].x < someX || someBounds[0].y > someY || someBounds[1].y < someY) && (myGrid.myCells[someY][someX].myWorldPosition - myMousePosition).Length() <= myViewDistance;;
+}
+
+const bool GameWorld::IsAlreadyMarkedForDraw(std::shared_ptr<GridObject> anObj)
+{
+	return std::find(myObjectsToDraw.begin(), myObjectsToDraw.end(), ObjectDrawInfo{ anObj }) != myObjectsToDraw.end();
+}
+
+const bool GameWorld::IsAlreadyMarkedForDraw(LineDrawInfo someLineDrawInfo)
+{
+	return std::find(myLinesToDraw.begin(), myLinesToDraw.end(), someLineDrawInfo) != myLinesToDraw.end();
+}
+
+std::array<Tga2D::Vector2i, 2> GameWorld::FetchBoundBox()
+{
+	Tga2D::Vector2f minPos = { myMousePosition.x - myViewDistance, myMousePosition.y - myViewDistance };
+	Tga2D::Vector2f maxPos = { myMousePosition.x + myViewDistance, myMousePosition.y + myViewDistance };
+
+	return myGrid.BoundBoxToIndex(minPos, maxPos);
+
+}
+
+void GameWorld::CollisionUpdate()
+{
+	auto r = FetchBoundBox();
+	for (size_t y = 0; y < myGrid.myCells.size(); y++)
+	{
+		for (size_t x = 0; x < myGrid.myCells[y].size(); x++)
+		{
+			if (IsInViewRadius(r, x, y) && myShowSearchAreaFlag)
+			{
+				myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 0,1,0,1 });
+			}
+			else
+				myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 1,1,1,1 });
+
+			if (myGrid.myCells[y][x].IsEmpty()) continue;
+
+			if (IsInViewRadius(r, x, y))
+			{
+				auto result = myGrid.TraceGridPath(myMousePosition, myGrid.myCells[y][x].myWorldPosition);
+				for (auto& cell : result)
+				{
+					for (auto& obj : cell->myContents)
+					{
+						myObjectsToCollide.push_back(obj);
+					}
+				}
+			}
+
+
+			for (size_t i = 0; i < myGrid.myCells[y][x].myContents.size(); i++)
+			{
+				if (!IsAlreadyMarkedForDraw(myGrid.myCells[y][x].myContents[i]))
+					myObjectsToDraw.push_back({ myGrid.myCells[y][x].myContents[i], Tga2D::Color(1.f,0.0f,0.0f,1) });
+			}
+
+		}
+	}
+
+
+
+
+
+	for (auto& obj : myObjectsToCollide)
+	{
+		std::shared_ptr<GridObject>* hitInfo = nullptr;
+		Ray2D<float> ray(myMousePosition, obj->myPosition);
+
+		if (Physics::IntersectionGridObjectRay(ray, myObjectsToCollide, hitInfo) && hitInfo && *hitInfo == obj)
+		{
+			if (!IsAlreadyMarkedForDraw(obj))
+				myObjectsToDraw.push_back({ obj, Tga2D::Color(1.f,1.0f,1.0f,1) });
+
+			if (!IsAlreadyMarkedForDraw(LineDrawInfo{ myMousePosition, obj->myPosition }))
+				myLinesToDraw.push_back({ myMousePosition, obj->myPosition, Tga2D::Color(1.f, 1.f, 1.f, 1.f) });
+
+		}
+	}
+	myObjectsToCollide.clear();
+}
+
+void GameWorld::TextElementUpdate()
+{
+	for (int i = 0; i < myTextElements.size(); i++)
+	{
+		int x = i % myGrid.myGridSize.x;
+		int y = i / myGrid.myGridSize.y;
+
+		std::string output;
+
+		if (myShowIndexFlag)
+		{
+			output += std::to_string(x) + "," + std::to_string(y) + "\n";
+			myTextElements[i]->SetScale(0.75f);
+		}
+
+
+		if (myShowCountFlag)
+		{
+			output += std::to_string(myGrid.myCells[y][x].myContents.size());
+
+
+			myTextElements[i]->SetScale(0.5f);
+		}
+
+		myTextElements[i]->SetText(output);
+
+	}
+}
+
+void GameWorld::EditorUpdate()
+{
 	static bool showIndexes = false;
 	static bool gridMapState = false;
 	static bool clearState = false;
@@ -111,66 +271,7 @@ void GameWorld::Update(float aTimeDelta)
 		myGrid.Clear();
 		clearState = false;
 	}
-
-
-	for (int i = 0; i < myTextElements.size(); i++)
-	{
-		int x = i % myGrid.myGridSize.x;
-		int y = i / myGrid.myGridSize.y;
-
-		std::string output;
-
-		if (myShowIndexFlag)
-		{
-			output += std::to_string(x) + "," + std::to_string(y) + "\n";
-			myTextElements[i]->SetScale(0.75f);
-		}
-
-
-		if (myShowCountFlag)
-		{
-			output += std::to_string(myGrid.myCells[y][x].myContents.size());
-
-
-			myTextElements[i]->SetScale(0.5f);
-		}
-
-		myTextElements[i]->SetText(output);
-
-	}
-
-
-	RECT rect;
-	GetClientRect(*Tga2D::Engine::GetInstance()->GetHWND(), &rect);
-
-	auto a = Tga2D::Engine::GetInstance()->GetTargetSize();
-	Tga2D::Vector2f targetRez = { static_cast<float>(a.x),static_cast<float>(a.y) };
-	Tga2D::Vector2f resolution = { static_cast<float>(rect.right),static_cast<float>(rect.bottom) };
-
-	aTimeDelta;
-
-	using namespace CommonUtilities;
-
-	auto pos = Mouse::GetMousePosition();
-
-	myMousePosition = { pos.x / targetRez.x, pos.y / targetRez.y };
-
-
-	if (Mouse::GetButtonDown(Mouse::Key::LeftMouseButton))
-	{
-		auto obj = new GridObject();
-		obj->myPosition = myMousePosition;
-		obj->mySize = { 20.f / targetRez.x, 20.f / targetRez.y };
-		myGrid.InsertObject(obj);
-	}
-
-
-
-
-
-
 }
-
 
 void GameWorld::DrawGrid()
 {
@@ -223,79 +324,32 @@ void GameWorld::DrawObjects()
 	{
 		drawer.DrawCircle(obj.myObj->myPosition, obj.myObj->mySize.x, obj.myColor);
 	}
-
 	myObjectsToDraw.clear();
+
+	for (auto& line : myLinesToDraw)
+	{
+		drawer.DrawLine(line.myStartPos, line.myEndPos, line.myColor);
+	}
+
+	myLinesToDraw.clear();
 
 }
 
-void GameWorld::Render()
+void GameWorld::DrawTextElements()
 {
-
-
-
-
-	Tga2D::DebugDrawer& drawer = Tga2D::Engine::GetInstance()->GetDebugDrawer();
-
-
-	Tga2D::Vector2f minPos = { myMousePosition.x - myViewDistance, myMousePosition.y - myViewDistance };
-	Tga2D::Vector2f maxPos = { myMousePosition.x + myViewDistance, myMousePosition.y + myViewDistance };
-
-	std::array<Tga2D::Vector2i, 2> r = myGrid.BoundBoxToIndex(minPos, maxPos);
-
-	//std::cout << "Min: " << r[0] << "/ Max: " << r[1] << std::endl;
-	for (size_t y = 0; y < myGrid.myCells.size(); y++)
-	{
-		for (size_t x = 0; x < myGrid.myCells[y].size(); x++)
-		{
-			bool isInViewRadius = !(r[0].x > x || r[1].x < x || r[0].y > y || r[1].y < y) && (myGrid.myCells[y][x].myWorldPosition - myMousePosition).Length() <= myViewDistance;
-			
-
-			if (isInViewRadius && myShowSearchAreaFlag)
-			{
-				myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 0,1,0,1 });
-			}
-			else
-				myTextElements[x + myGrid.myGridSize.x * y]->SetColor({ 1,1,1,1 });
-
-			if (myGrid.myCells[y][x].IsEmpty()) continue;
-
-			if (isInViewRadius)
-			{
-				auto result = myGrid.Raycast(myMousePosition, myGrid.myCells[y][x].myWorldPosition);
-				for (auto& cell : result)
-				{
-					if (!cell->IsEmpty())
-					{
-						for (size_t i = 0; i < cell->myContents.size(); i++)
-						{
-							drawer.DrawLine(myMousePosition, cell->myContents[i]->myPosition);
-							if (std::find(myObjectsToDraw.begin(), myObjectsToDraw.end(), DrawInfo{ cell->myContents[i], Tga2D::Color(1,1,1,1) }) == myObjectsToDraw.end())
-								myObjectsToDraw.push_back({ cell->myContents[i], Tga2D::Color(1,1,1,1) });
-						}
-						break;
-
-					}
-				}
-			}
-
-
-			for (size_t i = 0; i < myGrid.myCells[y][x].myContents.size(); i++)
-			{
-				if (std::find(myObjectsToDraw.begin(), myObjectsToDraw.end(), DrawInfo{ myGrid.myCells[y][x].myContents[i], Tga2D::Color(0.5f,0.5f,0.5f,1) }) == myObjectsToDraw.end())
-					myObjectsToDraw.push_back({ myGrid.myCells[y][x].myContents[i], Tga2D::Color(1.f,0.0f,0.0f,1) });
-			}
-
-		}
-	}
-
-
-	DrawGrid();
-	DrawObjects();
-
 	if (myShowIndexFlag || myShowCountFlag)
 		for (size_t i = 0; i < myTextElements.size(); i++)
 		{
 			myTextElements[i]->Render();
 		}
+}
+
+void GameWorld::Render()
+{
+
+	DrawGrid();
+	DrawObjects();
+	DrawTextElements();
+
 
 }

@@ -11,7 +11,7 @@ public:
 		myDirection = Tga2D::Vector2<T>();
 	}
 
-	Ray2D(const Ray<T> aRay)
+	Ray2D(const Ray2D<T>& aRay)
 	{
 		myOrigin = aRay.myOrigin;
 		myDirection = aRay.myDirection;
