@@ -163,10 +163,16 @@ void GameWorld::CollisionUpdate()
 				auto result = myGrid.TraceGridPath(myMousePosition, myGrid.myCells[y][x].myWorldPosition);
 				for (auto& cell : result)
 				{
-					for (auto& obj : cell->myContents)
+					if (!cell->IsEmpty())
 					{
-						myObjectsToCollide.push_back(obj);
+						for (auto& obj : cell->myContents)
+						{
+							myObjectsToCollide.push_back(obj);
+						}
+						
 					}
+
+
 				}
 			}
 
@@ -186,18 +192,16 @@ void GameWorld::CollisionUpdate()
 
 	for (auto& obj : myObjectsToCollide)
 	{
-		std::shared_ptr<GridObject>* hitInfo = nullptr;
-		Ray2D<float> ray(myMousePosition, obj->myPosition);
 
-		if (Physics::IntersectionGridObjectRay(ray, myObjectsToCollide, hitInfo) && hitInfo && *hitInfo == obj)
-		{
-			if (!IsAlreadyMarkedForDraw(obj))
-				myObjectsToDraw.push_back({ obj, Tga2D::Color(1.f,1.0f,1.0f,1) });
 
-			if (!IsAlreadyMarkedForDraw(LineDrawInfo{ myMousePosition, obj->myPosition }))
-				myLinesToDraw.push_back({ myMousePosition, obj->myPosition, Tga2D::Color(1.f, 1.f, 1.f, 1.f) });
 
-		}
+		if (!IsAlreadyMarkedForDraw(obj))
+			myObjectsToDraw.push_back({ obj, Tga2D::Color(1.f,1.0f,1.0f,1) });
+
+		if (!IsAlreadyMarkedForDraw(LineDrawInfo{ myMousePosition, obj->myPosition }))
+			myLinesToDraw.push_back({ myMousePosition, obj->myPosition, Tga2D::Color(1.f, 1.f, 1.f, 1.f) });
+
+
 	}
 	myObjectsToCollide.clear();
 }

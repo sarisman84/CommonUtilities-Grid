@@ -5,7 +5,7 @@
 
 namespace Physics
 {
-	bool IntersectionGridObjectRay(Ray2D<float> aRay, std::vector<std::shared_ptr<GridObject>> someObjects, std::shared_ptr<GridObject>* anOutput)
+	bool IntersectionGridObjectRay(Ray2D<float> aRay, std::vector<std::shared_ptr<GridObject>> someObjects, std::shared_ptr<GridObject>& anOutput)
 	{
 		for (auto& obj : someObjects)
 		{
@@ -35,7 +35,7 @@ namespace Physics
 			if (tMax < 0.0f || tMin > tMax) continue;
 			if (tMin < 0.0f)
 			{
-				anOutput = &obj;
+				anOutput = obj;
 				return true;
 			}
 		}
