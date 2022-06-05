@@ -169,7 +169,7 @@ void GameWorld::CollisionUpdate()
 						{
 							myObjectsToCollide.push_back(obj);
 						}
-						
+						break;
 					}
 
 
