@@ -83,9 +83,10 @@ void Grid::InsertObject(GridObject* anObject)
 	InsertObjectInGrid(obj, cell);
 }
 
-std::vector<Cell*> Grid::Raycast(Tga2D::Vector2f aStartPos, Tga2D::Vector2f anEndPos)
+std::vector<std::shared_ptr<GridObject>> Grid::Raycast(Tga2D::Vector2f aStartPos, Tga2D::Vector2f anEndPos)
 {
-	std::vector<Cell*> r;
+	std::vector<std::shared_ptr<GridObject>> r;
+
 	//Taken from this article: http://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
 	auto startPos = GetCellPosAtPos(aStartPos);
 	auto endPos = GetCellPosAtPos(anEndPos);
@@ -96,12 +97,35 @@ std::vector<Cell*> Grid::Raycast(Tga2D::Vector2f aStartPos, Tga2D::Vector2f anEn
 	Tga2D::Vector2i increment = { anEndPos.x > aStartPos.x ? 1 : -1,anEndPos.y > aStartPos.y ? 1 : -1 };
 	int error = delta.x - delta.y;
 	delta = delta * Tga2D::Vector2i{ 2, 2 };
-
+	bool isIntersectingCircle;
 
 	for (; n > 0; --n)
 	{
+		r.clear();
+		isIntersectingCircle = false;
+		Tga2D::Vector2f d = Tga2D::Vector2f(anEndPos - aStartPos).GetNormalized();
+
 		//visit
-		r.push_back(GetCellAtPos(pos));
+		auto cell = GetCellAtPos(pos);
+		if (!cell->IsEmpty())
+		{
+			for (size_t i = 0; i < cell->myContents.size(); i++)
+			{
+				Tga2D::Vector2f u = cell->myContents[i]->myPosition - aStartPos;
+				Tga2D::Vector2f pU = (u.Dot(d)) * d;
+				Tga2D::Vector2f u2 = u - pU;
+				float nD = u2.Length();
+				isIntersectingCircle = nD <= cell->myContents[i]->mySize.x;
+
+				r.push_back(cell->myContents[i]);
+
+			}
+		}
+
+		if (isIntersectingCircle)
+		{
+			return r;
+		}
 
 		if (error > 0)
 		{

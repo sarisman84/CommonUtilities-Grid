@@ -54,9 +54,9 @@ public:
 
 	void InsertObject(GridObject* anObject);
 
-
-	std::vector<Cell*> Raycast(Tga2D::Vector2f aStartPos, Tga2D::Vector2f anEndPos);
-	std::array<Tga2D::Vector2i,2> BoundBoxToIndex(Tga2D::Vector2f aMinPos, Tga2D::Vector2f aMaxPos);
+public:
+	std::vector<std::shared_ptr<GridObject>> Raycast(Tga2D::Vector2f aStartPos, Tga2D::Vector2f anEndPos);
+	std::array<Tga2D::Vector2i, 2> BoundBoxToIndex(Tga2D::Vector2f aMinPos, Tga2D::Vector2f aMaxPos);
 private:
 	const bool IsPosOutOfBounds(const Tga2D::Vector2f aPosition);
 

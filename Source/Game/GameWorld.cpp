@@ -6,6 +6,8 @@
 #include <tga2d/sprite/sprite.h>
 #include <tga2d/drawers/SpriteDrawer.h>
 #include <tga2d/texture/TextureManager.h>
+#include <tga2d/drawers/DebugDrawer.h>
+
 
 #include "tga2d/drawers/ModelDrawer.h"
 #include "tga2d/graphics/Camera.h"
@@ -248,7 +250,7 @@ void GameWorld::Render()
 		for (size_t x = 0; x < myGrid.myCells[y].size(); x++)
 		{
 			bool isInViewRadius = !(r[0].x > x || r[1].x < x || r[0].y > y || r[1].y < y) && (myGrid.myCells[y][x].myWorldPosition - myMousePosition).Length() <= myViewDistance;
-			
+
 
 			if (isInViewRadius && myShowSearchAreaFlag)
 			{
@@ -261,21 +263,17 @@ void GameWorld::Render()
 
 			if (isInViewRadius)
 			{
-				auto result = myGrid.Raycast(myMousePosition, myGrid.myCells[y][x].myWorldPosition);
-				for (auto& cell : result)
-				{
-					if (!cell->IsEmpty())
-					{
-						for (size_t i = 0; i < cell->myContents.size(); i++)
-						{
-							drawer.DrawLine(myMousePosition, cell->myContents[i]->myPosition);
-							if (std::find(myObjectsToDraw.begin(), myObjectsToDraw.end(), DrawInfo{ cell->myContents[i], Tga2D::Color(1,1,1,1) }) == myObjectsToDraw.end())
-								myObjectsToDraw.push_back({ cell->myContents[i], Tga2D::Color(1,1,1,1) });
-						}
-						break;
 
-					}
+				auto result = myGrid.Raycast(myMousePosition, myGrid.myCells[y][x].myWorldPosition);
+				for (auto& obj : result)
+				{
+					drawer.DrawLine(myMousePosition, obj->myPosition);
+					if (std::find(myObjectsToDraw.begin(), myObjectsToDraw.end(), DrawInfo{ obj, Tga2D::Color(1,1,1,1) }) == myObjectsToDraw.end())
+						myObjectsToDraw.push_back({ obj, Tga2D::Color(1,1,1,1) });
+
 				}
+
+
 			}
 
 

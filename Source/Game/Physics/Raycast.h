@@ -17,7 +17,7 @@ namespace Physics
 		y += floor(aRay.GetDirection().GetNormalized().y);
 
 		bool hasFoundSomething;
-		auto cell = aGrid->GetCellAtPos({ x,y });
+		auto cell = aGrid->GetCellAtPos(Tga2D::Vector2i{ x,y });
 		while (cell->IsEmpty() && x >= 0 && x < aGrid->myGridSize.x && y >= 0 && y < aGrid->myGridSize.y)
 		{
 			if (!cell->IsEmpty())
@@ -30,7 +30,7 @@ namespace Physics
 			x += floor(aRay.GetDirection().GetNormalized().x);
 			y += floor(aRay.GetDirection().GetNormalized().y);
 
-			cell = aGrid->GetCellAtPos({ x,y });
+			cell = aGrid->GetCellAtPos(Tga2D::Vector2i{ x,y });
 		}
 
 
